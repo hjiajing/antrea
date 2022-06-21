@@ -15,6 +15,7 @@
 package multicluster
 
 import (
+	multiclusterInit "antrea.io/antrea/pkg/antctl/raw/multicluster/init"
 	"github.com/spf13/cobra"
 
 	"antrea.io/antrea/pkg/antctl/raw/multicluster/add"
@@ -48,6 +49,8 @@ var DeployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploy Antrea Multi-cluster Controller to a leader or member cluster",
 }
+
+var InitCmd = multiclusterInit.NewInitCmd()
 
 func init() {
 	GetCmd.AddCommand(get.NewClusterSetCommand())

@@ -620,6 +620,12 @@ $ antctl get podmulticaststats pod -n namespace`,
 			supportController: false,
 			commandGroup:      mc,
 		},
+		{
+			cobraCommand:      multicluster.InitCmd,
+			supportAgent:      false,
+			supportController: false,
+			commandGroup:      mc,
+		},
 	},
 	codec: scheme.Codecs,
 }
