@@ -45,6 +45,20 @@ const (
 	netDeviceTypeVF   = "vf"
 )
 
+var (
+	linkByNameFunc  = netlink.LinkByName
+	linkSetDownFunc = netlink.LinkSetDown
+	linkSetNameFunc = netlink.LinkSetName
+	linkSetUpFunc   = netlink.LinkSetUp
+
+	getNSDevInterfaceFunc  = util.GetNSDevInterface
+	getNSPeerDevBridgeFunc = util.GetNSPeerDevBridge
+
+	getUplinkRepresentorFunc   = sriovnet.GetUplinkRepresentor
+	getVfIndexByPciAddressFunc = sriovnet.GetVfIndexByPciAddress
+	getVfRepresentorFunc       = sriovnet.GetVfRepresentor
+)
+
 type ifConfigurator struct {
 	ovsDatapathType             ovsconfig.OVSDatapathType
 	isOvsHardwareOffloadEnabled bool
@@ -482,15 +496,15 @@ func validateContainerVethInterface(intf *current.Interface) (*vethPair, error) 
 }
 
 func (ic *ifConfigurator) validateVFRepInterface(sriovVFDeviceID string) (string, error) {
-	uplink, err := sriovnet.GetUplinkRepresentor(sriovVFDeviceID)
+	uplink, err := getUplinkRepresentorFunc(sriovVFDeviceID)
 	if err != nil {
 		return "", fmt.Errorf("failed to get uplink representor for PCI Address %s", sriovVFDeviceID)
 	}
-	vfIndex, err := sriovnet.GetVfIndexByPciAddress(sriovVFDeviceID)
+	vfIndex, err := getVfIndexByPciAddressFunc(sriovVFDeviceID)
 	if err != nil {
 		return "", fmt.Errorf("failed to vf index for PCI Address %s", sriovVFDeviceID)
 	}
-	return sriovnet.GetVfRepresentor(uplink, vfIndex)
+	return getVfRepresentorFunc(uplink, vfIndex)
 }
 
 func (ic *ifConfigurator) validateContainerPeerInterface(interfaces []*current.Interface, containerVeth *vethPair) (*vethPair, error) {
@@ -545,7 +559,7 @@ func (ic *ifConfigurator) getInterceptedInterfaces(
 	containerIFDev string,
 ) (*current.Interface, *current.Interface, error) {
 	containerIface := &current.Interface{}
-	intf, err := util.GetNSDevInterface(containerNetNS, containerIFDev)
+	intf, err := getNSDevInterfaceFunc(containerNetNS, containerIFDev)
 	if err != nil {
 		return nil, nil, fmt.Errorf("connectInterceptedInterface failed to get veth info: %w", err)
 	}
@@ -555,7 +569,7 @@ func (ic *ifConfigurator) getInterceptedInterfaces(
 
 	// Setup dev in host ns.
 	hostIface := &current.Interface{}
-	intf, br, err := util.GetNSPeerDevBridge(containerNetNS, containerIFDev)
+	intf, br, err := getNSPeerDevBridgeFunc(containerNetNS, containerIFDev)
 	if err != nil {
 		return nil, nil, fmt.Errorf("connectInterceptedInterface failed to get veth peer info: %w", err)
 	}
@@ -580,7 +594,7 @@ func validateInterface(intf *current.Interface, inNetns bool, ifType string) (ne
 			return nil, fmt.Errorf("interface %s is expected not in netns", intf.Name)
 		}
 	}
-	link, err := netlink.LinkByName(intf.Name)
+	link, err := linkByNameFunc(intf.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find link for interface %s", intf.Name)
 	}
