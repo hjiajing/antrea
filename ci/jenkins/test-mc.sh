@@ -37,6 +37,7 @@ COVERAGE=false
 KIND=false
 DEBUG=false
 GOLANG_RELEASE_DIR=${WORKDIR}/golang-releases
+KIND_IMAGE="kindest/node:v1.29.0"
 
 multicluster_kubeconfigs=($EAST_CLUSTER_CONFIG $LEADER_CLUSTER_CONFIG $WEST_CLUSTER_CONFIG)
 membercluster_kubeconfigs=($EAST_CLUSTER_CONFIG $WEST_CLUSTER_CONFIG)
@@ -479,7 +480,7 @@ if [[ ${KIND} == "true" ]]; then
     SERVICE_CIDRS=("10.96.10.0/24" "10.96.20.0/24" "10.96.30.0/24")
     POD_CIDRS=("10.244.0.0/20" "10.244.16.0/20" "10.244.32.0/20")
     for i in {0..2}; do
-        ./ci/kind/kind-setup.sh create ${CLUSTER_NAMES[$i]} --service-cidr ${SERVICE_CIDRS[$i]} --pod-cidr ${POD_CIDRS[$i]} --num-workers 1
+        ./ci/kind/kind-setup.sh create ${CLUSTER_NAMES[$i]} --service-cidr ${SERVICE_CIDRS[$i]} --pod-cidr ${POD_CIDRS[$i]} --num-workers 1 --image=${KIND_IMAGE}
     done
 
     for name in ${CLUSTER_NAMES[*]}; do
